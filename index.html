@@ -11,23 +11,23 @@
     <title>The Lake - AR Character Archive</title>
 
 
-    <!-- ===================================== -->
+    <!-- ========================================= -->
     <!-- A-FRAME -->
-    <!-- ===================================== -->
+    <!-- ========================================= -->
 
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
 
-    <!-- ===================================== -->
-    <!-- MINDAR -->
-    <!-- ===================================== -->
+    <!-- ========================================= -->
+    <!-- MINDAR IMAGE TRACKING -->
+    <!-- ========================================= -->
 
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 
-    <!-- ===================================== -->
-    <!-- STYLE -->
-    <!-- ===================================== -->
+    <!-- ========================================= -->
+    <!-- PAGE STYLE -->
+    <!-- ========================================= -->
 
     <style>
 
@@ -46,6 +46,8 @@
 
         }
 
+
+        /* START AR BUTTON */
 
         #startButton {
 
@@ -70,8 +72,21 @@
 
             color: white;
 
+            cursor: pointer;
+
         }
 
+
+        #startButton:disabled {
+
+            opacity: 0.6;
+
+            cursor: wait;
+
+        }
+
+
+        /* STATUS MESSAGE */
 
         #status {
 
@@ -107,27 +122,27 @@
 <body>
 
 
-    <!-- ===================================== -->
-    <!-- START BUTTON -->
-    <!-- ===================================== -->
+    <!-- ========================================= -->
+    <!-- START AR BUTTON -->
+    <!-- ========================================= -->
 
-    <button id="startButton">
-        START AR
+    <button id="startButton" disabled>
+        LOADING...
     </button>
 
 
-    <!-- ===================================== -->
+    <!-- ========================================= -->
     <!-- STATUS -->
-    <!-- ===================================== -->
+    <!-- ========================================= -->
 
     <div id="status">
         Loading AR system...
     </div>
 
 
-    <!-- ===================================== -->
+    <!-- ========================================= -->
     <!-- AR SCENE -->
-    <!-- ===================================== -->
+    <!-- ========================================= -->
 
     <a-scene
 
@@ -153,12 +168,13 @@
         vr-mode-ui="enabled: false"
 
         device-orientation-permission-ui="enabled: false"
+
     >
 
 
-        <!-- ===================================== -->
+        <!-- ========================================= -->
         <!-- ASSETS -->
-        <!-- ===================================== -->
+        <!-- ========================================= -->
 
         <a-assets>
 
@@ -184,9 +200,9 @@
         </a-assets>
 
 
-        <!-- ===================================== -->
+        <!-- ========================================= -->
         <!-- CAMERA -->
-        <!-- ===================================== -->
+        <!-- ========================================= -->
 
         <a-camera
 
@@ -198,18 +214,18 @@
         </a-camera>
 
 
-        <!-- ===================================== -->
-        <!-- TAEHYUN TARGET -->
-        <!-- ===================================== -->
+        <!-- ========================================= -->
+        <!-- TAEHYUN IMAGE TARGET -->
+        <!-- ========================================= -->
 
         <!--
 
-            TARGET ORDER:
+            MindAR target order:
 
-            0 = TaeHyun
-            1 = Wendy
-            2 = JB
-            3 = Han
+            Image 1 = TaeHyun = targetIndex 0
+            Image 2 = Wendy   = targetIndex 1
+            Image 3 = JB      = targetIndex 2
+            Image 4 = Han     = targetIndex 3
 
         -->
 
@@ -222,9 +238,9 @@
         >
 
 
-            <!-- ================================= -->
-            <!-- VIDEO -->
-            <!-- ================================= -->
+            <!-- ===================================== -->
+            <!-- TAEHYUN VIDEO -->
+            <!-- ===================================== -->
 
             <a-video
 
@@ -250,9 +266,9 @@
     </a-scene>
 
 
-    <!-- ===================================== -->
+    <!-- ========================================= -->
     <!-- JAVASCRIPT -->
-    <!-- ===================================== -->
+    <!-- ========================================= -->
 
     <script>
 
@@ -261,9 +277,9 @@
             function () {
 
 
-                // =================================
+                // =====================================
                 // GET HTML ELEMENTS
-                // =================================
+                // =====================================
 
                 const sceneEl =
                     document.querySelector("#arScene");
@@ -285,16 +301,16 @@
                     document.querySelector("#taehyunVideo");
 
 
-                // =================================
+                // =====================================
                 // MINDAR SYSTEM
-                // =================================
+                // =====================================
 
                 let arSystem = null;
 
 
-                // =================================
-                // WAIT FOR A-FRAME TO FINISH LOADING
-                // =================================
+                // =====================================
+                // WAIT FOR A-FRAME SCENE TO LOAD
+                // =====================================
 
                 sceneEl.addEventListener(
                     "loaded",
@@ -305,14 +321,14 @@
                         );
 
 
-                        // NOW MindAR is available
+                        // Get MindAR system
                         arSystem =
                             sceneEl.systems[
                                 "mindar-image-system"
                             ];
 
 
-                        // Check if MindAR was found
+                        // Check if MindAR loaded
                         if (!arSystem) {
 
                             console.error(
@@ -321,9 +337,10 @@
 
 
                             status.innerText =
-                                "❌ MindAR failed to load.";
+                                "❌ MindAR system was NOT loaded.";
 
                             return;
+
                         }
 
 
@@ -340,36 +357,45 @@
                         startButton.disabled =
                             false;
 
+
+                        startButton.textContent =
+                            "START AR";
+
                     }
                 );
 
 
-                // =================================
+                // =====================================
                 // START AR
-                // =================================
+                // =====================================
 
                 startButton.addEventListener(
                     "click",
                     function () {
-
 
                         console.log(
                             "START AR clicked."
                         );
 
 
-                        // Don't start before MindAR loads
+                        // Safety check
                         if (!arSystem) {
 
                             status.innerText =
-                                "Please wait for AR to finish loading.";
+                                "❌ MindAR is not ready yet.";
 
-                            console.warn(
-                                "MindAR is not ready yet."
+                            console.error(
+                                "MindAR system is unavailable."
                             );
 
                             return;
+
                         }
+
+
+                        // Disable button
+                        startButton.disabled =
+                            true;
 
 
                         // Hide button
@@ -401,13 +427,20 @@
                             );
 
 
-                            status.innerText =
-                                "❌ AR start error: " +
-                                error.message;
-
-
                             startButton.style.display =
                                 "block";
+
+
+                            startButton.disabled =
+                                false;
+
+
+                            startButton.textContent =
+                                "START AR";
+
+
+                            status.innerText =
+                                "❌ AR start error.";
 
                         }
 
@@ -415,16 +448,16 @@
                 );
 
 
-                // =================================
+                // =====================================
                 // AR READY
-                // =================================
+                // =====================================
 
                 sceneEl.addEventListener(
                     "arReady",
                     function () {
 
                         console.log(
-                            "AR READY!"
+                            "MINDAR IS READY!"
                         );
 
 
@@ -435,40 +468,49 @@
                 );
 
 
-                // =================================
+                // =====================================
                 // AR ERROR
-                // =================================
+                // =====================================
 
                 sceneEl.addEventListener(
                     "arError",
                     function (event) {
 
                         console.error(
-                            "AR ERROR:",
+                            "MINDAR AR ERROR:",
                             event
                         );
+
+
+                        startButton.style.display =
+                            "block";
+
+
+                        startButton.disabled =
+                            false;
+
+
+                        startButton.textContent =
+                            "START AR";
 
 
                         status.innerText =
                             "❌ MindAR could not start.";
 
-                        startButton.style.display =
-                            "block";
-
                     }
                 );
 
 
-                // =================================
+                // =====================================
                 // TAEHYUN CARD FOUND
-                // =================================
+                // =====================================
 
                 taehyunTarget.addEventListener(
                     "targetFound",
                     function () {
 
                         console.log(
-                            "TAEHYUN CARD FOUND!"
+                            "🎬 TAEHYUN CARD FOUND!"
                         );
 
 
@@ -476,19 +518,19 @@
                             "🎬 TaeHyun found!";
 
 
-                        // Start from beginning
+                        // Start video from beginning
                         taehyunVideo.currentTime =
                             0;
 
 
-                        // Play animation
+                        // Play AI animation
                         taehyunVideo
                             .play()
                             .then(
                                 function () {
 
                                     console.log(
-                                        "TaeHyun video playing!"
+                                        "✅ TaeHyun video is playing!"
                                     );
 
                                 }
@@ -497,7 +539,7 @@
                                 function (error) {
 
                                     console.error(
-                                        "Video playback error:",
+                                        "❌ Video playback error:",
                                         error
                                     );
 
@@ -508,16 +550,16 @@
                 );
 
 
-                // =================================
+                // =====================================
                 // TAEHYUN CARD LOST
-                // =================================
+                // =====================================
 
                 taehyunTarget.addEventListener(
                     "targetLost",
                     function () {
 
                         console.log(
-                            "TAEHYUN CARD LOST!"
+                            "TAEHYUN CARD LOST."
                         );
 
 
@@ -525,6 +567,7 @@
                             "🔍 Looking for TaeHyun card...";
 
 
+                        // Pause video
                         taehyunVideo.pause();
 
                     }
