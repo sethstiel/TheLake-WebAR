@@ -269,261 +269,139 @@
     <!-- JAVASCRIPT -->
     <!-- ========================================= -->
 
-    <script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
+    const sceneEl = document.querySelector("#arScene");
+    const startButton = document.querySelector("#startButton");
+    const status = document.querySelector("#status");
 
+    const taehyunTarget = document.querySelector("#taehyunTarget");
+    const taehyunVideo = document.querySelector("#taehyunVideo");
 
-                // =================================
-                // GET ELEMENTS
-                // =================================
+    let arSystem = null;
+    let initialized = false;
 
-                const sceneEl =
-                    document.querySelector("#arScene");
+    function initializeMindAR() {
 
+        if (initialized) return;
 
-                const startButton =
-                    document.querySelector("#startButton");
+        // Check A-Frame
+        if (!window.AFRAME) {
+            status.innerText = "❌ A-Frame did not load.";
+            console.error("A-Frame is missing.");
+            return;
+        }
 
+        // Wait until A-Frame has created its systems
+        arSystem = sceneEl.systems["mindar-image-system"];
 
-                const status =
-                    document.querySelector("#status");
+        if (!arSystem) {
+            console.log("MindAR system not ready yet. Retrying...");
+            setTimeout(initializeMindAR, 200);
+            return;
+        }
 
+        initialized = true;
 
-                const taehyunTarget =
-                    document.querySelector("#taehyunTarget");
+        console.log("✅ A-Frame loaded.");
+        console.log("✅ MindAR system loaded:", arSystem);
 
+        status.innerText = "✅ MindAR loaded. Ready!";
+        startButton.disabled = false;
+        startButton.textContent = "START AR";
 
-                const taehyunVideo =
-                    document.querySelector("#taehyunVideo");
+        // START AR
+        startButton.addEventListener("click", function () {
 
+            console.log("START AR clicked.");
 
-                // =================================
-                // GET MINDAR SYSTEM
-                // =================================
+            startButton.style.display = "none";
+            status.innerText = "📷 Starting camera...";
 
-                const arSystem =
-                    sceneEl.systems["mindar-image-system"];
-
-
-                console.log(
-                    "MindAR system:",
-                    arSystem
-                );
-
-
-                // =================================
-                // CHECK MINDAR
-                // =================================
-
-                if (!arSystem) {
-
-                    status.innerText =
-                        "❌ MindAR did not load.";
-
-                    console.error(
-                        "MindAR system was not found."
-                    );
-
-                    return;
-
-                }
-
-
-                // =================================
-                // MINDAR LOADED
-                // =================================
-
-                console.log(
-                    "✅ MindAR loaded successfully."
-                );
-
+            try {
+                arSystem.start();
+            } catch (error) {
+                console.error("MindAR start error:", error);
 
                 status.innerText =
-                    "✅ MindAR loaded. Ready!";
+                    "❌ AR start failed: " + error.message;
 
-
-                startButton.disabled =
-                    false;
-
-
-                startButton.textContent =
-                    "START AR";
-
-
-                // =================================
-                // START AR
-                // =================================
-
-                startButton.addEventListener(
-                    "click",
-                    function () {
-
-
-                        console.log(
-                            "START AR clicked."
-                        );
-
-
-                        startButton.style.display =
-                            "none";
-
-
-                        status.innerText =
-                            "📷 Starting camera...";
-
-
-                        try {
-
-                            arSystem.start();
-
-                        }
-
-                        catch (error) {
-
-                            console.error(
-                                "MindAR start error:",
-                                error
-                            );
-
-
-                            status.innerText =
-                                "❌ AR start failed.";
-
-
-                            startButton.style.display =
-                                "block";
-
-                        }
-
-                    }
-                );
-
-
-                // =================================
-                // AR READY
-                // =================================
-
-                sceneEl.addEventListener(
-                    "arReady",
-                    function () {
-
-                        console.log(
-                            "✅ AR READY!"
-                        );
-
-
-                        status.innerText =
-                            "✅ Camera ready! Point at TaeHyun's card.";
-
-                    }
-                );
-
-
-                // =================================
-                // AR ERROR
-                // =================================
-
-                sceneEl.addEventListener(
-                    "arError",
-                    function (event) {
-
-                        console.error(
-                            "❌ AR ERROR:",
-                            event
-                        );
-
-
-                        status.innerText =
-                            "❌ MindAR could not start.";
-
-                        startButton.style.display =
-                            "block";
-
-                    }
-                );
-
-
-                // =================================
-                // TAEHYUN CARD FOUND
-                // =================================
-
-                taehyunTarget.addEventListener(
-                    "targetFound",
-                    function () {
-
-
-                        console.log(
-                            "🎬 TAEHYUN FOUND!"
-                        );
-
-
-                        status.innerText =
-                            "🎬 TaeHyun found!";
-
-
-                        // Start from beginning
-                        taehyunVideo.currentTime =
-                            0;
-
-
-                        // Play AI animation
-                        taehyunVideo
-                            .play()
-                            .then(
-                                function () {
-
-                                    console.log(
-                                        "✅ TaeHyun video playing!"
-                                    );
-
-                                }
-                            )
-                            .catch(
-                                function (error) {
-
-                                    console.error(
-                                        "❌ Video playback error:",
-                                        error
-                                    );
-
-                                }
-                            );
-
-                    }
-                );
-
-
-                // =================================
-                // TAEHYUN CARD LOST
-                // =================================
-
-                taehyunTarget.addEventListener(
-                    "targetLost",
-                    function () {
-
-
-                        console.log(
-                            "TAEHYUN LOST"
-                        );
-
-
-                        status.innerText =
-                            "🔍 Looking for TaeHyun card...";
-
-
-                        taehyunVideo.pause();
-
-                    }
-                );
-
-
+                startButton.style.display = "block";
             }
-        );
+        });
 
-    </script>
+        // AR READY
+        sceneEl.addEventListener("arReady", function () {
+
+            console.log("✅ AR READY!");
+
+            status.innerText =
+                "✅ Camera ready! Point at TaeHyun's card.";
+
+        });
+
+        // AR ERROR
+        sceneEl.addEventListener("arError", function (event) {
+
+            console.error("❌ AR ERROR:", event);
+
+            status.innerText =
+                "❌ MindAR camera error.";
+
+            startButton.style.display = "block";
+            startButton.disabled = false;
+            startButton.textContent = "START AR";
+
+        });
+
+        // TARGET FOUND
+        taehyunTarget.addEventListener("targetFound", function () {
+
+            console.log("🎬 TAEHYUN CARD FOUND!");
+
+            status.innerText = "🎬 TaeHyun found!";
+
+            taehyunVideo.currentTime = 0;
+
+            taehyunVideo.play()
+                .then(function () {
+                    console.log("✅ TaeHyun video is playing!");
+                })
+                .catch(function (error) {
+                    console.error(
+                        "❌ Video playback error:",
+                        error
+                    );
+                });
+
+        });
+
+        // TARGET LOST
+        taehyunTarget.addEventListener("targetLost", function () {
+
+            console.log("TAEHYUN CARD LOST.");
+
+            status.innerText =
+                "🔍 Looking for TaeHyun card...";
+
+            taehyunVideo.pause();
+
+        });
+    }
+
+    // Wait for A-Frame scene initialization
+    if (sceneEl.hasLoaded) {
+        initializeMindAR();
+    } else {
+        sceneEl.addEventListener(
+            "loaded",
+            initializeMindAR
+        );
+    }
+
+});
+</script>
 
 
 </body>
