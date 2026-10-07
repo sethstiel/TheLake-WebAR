@@ -128,19 +128,54 @@
 
 
         // START AR
-        startButton.addEventListener("click", async () => {
+startButton.addEventListener("click", async () => {
 
-            startButton.style.display = "none";
+    startButton.disabled = true;
+    startButton.textContent = "Starting camera...";
 
-            // Start MindAR
-            scene.emit("arReady");
+    try {
 
-            const mindarSystem =
-                scene.systems["mindar-image"];
-
-            await mindarSystem.start();
-
+        // Ask the browser for camera permission
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: {
+                    ideal: "environment"
+                }
+            },
+            audio: false
         });
+
+        console.log("Camera permission granted.");
+
+        // We only needed this temporary stream
+        // to request camera permission.
+        stream.getTracks().forEach(track => track.stop());
+
+        // Hide the Start AR button
+        startButton.style.display = "none";
+
+        // Start MindAR
+        const mindarSystem =
+            scene.systems["mindar-image"];
+
+        await mindarSystem.start();
+
+        console.log("MindAR started.");
+
+    } catch (error) {
+
+        console.error("Camera error:", error);
+
+        startButton.disabled = false;
+        startButton.textContent = "START AR";
+
+        alert(
+            "Camera access failed.\n\n" +
+            "Please make sure you are using Chrome or Safari " +
+            "and have allowed camera permission."
+        );
+    }
+});
 
 
         // CARD FOUND
