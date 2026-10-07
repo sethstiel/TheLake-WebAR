@@ -164,17 +164,24 @@ startButton.addEventListener("click", async () => {
 
     } catch (error) {
 
-        console.error("Camera error:", error);
+    console.error("Camera error:", error);
 
-        startButton.disabled = false;
-        startButton.textContent = "START AR";
+    startButton.disabled = false;
+    startButton.textContent = "START AR";
 
-        alert(
-            "Camera access failed.\n\n" +
-            "Please make sure you are using Chrome or Safari " +
-            "and have allowed camera permission."
-        );
-    }
+    const secure = window.isSecureContext;
+    const protocol = window.location.protocol;
+    const mediaDevicesAvailable = !!navigator.mediaDevices;
+
+    alert(
+        "CAMERA ERROR\n\n" +
+        "Error: " + error.name + "\n" +
+        "Message: " + error.message + "\n\n" +
+        "HTTPS/Secure: " + secure + "\n" +
+        "Protocol: " + protocol + "\n" +
+        "Camera API available: " + mediaDevicesAvailable
+    );
+}
 });
 
 
