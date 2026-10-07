@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0,
+                   maximum-scale=1.0, user-scalable=no">
+
+    <title>The Lake - AR Character Archive</title>
+
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+
+    <!-- MindAR Image Tracking -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #startButton {
+            position: fixed;
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+
+            padding: 18px 30px;
+            font-size: 20px;
+
+            border: none;
+            border-radius: 12px;
+
+            background: #111;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Start AR Button -->
+    <button id="startButton">
+        START AR
+    </button>
+
+
+    <!-- AR Scene -->
+    <a-scene
+        id="arScene"
+
+        mindar-image="
+            imageTargetSrc: ./targets.mind;
+            autoStart: false;
+        "
+
+        color-space="sRGB"
+
+        renderer="
+            colorManagement: true;
+            physicallyCorrectLights
+        "
+
+        vr-mode-ui="enabled: false"
+
+        device-orientation-permission-ui="enabled: false">
+
+
+        <!-- CAMERA -->
+        <a-camera
+            position="0 0 0"
+            look-controls="enabled: false">
+        </a-camera>
+
+
+        <!-- TAEHYUN TARGET -->
+        <a-entity
+            id="taehyunTarget"
+            mindar-image-target="targetIndex: 0">
+
+
+            <!-- VIDEO -->
+            <video
+                id="taehyunVideo"
+                src="./videos/TaeHyun.mp4"
+                loop
+                playsinline
+                webkit-playsinline
+                crossorigin="anonymous">
+            </video>
+
+
+            <!-- VIDEO DISPLAY -->
+            <a-video
+                id="taehyunVideoPlane"
+
+                src="#taehyunVideo"
+
+                position="0 0 0.01"
+
+                width="1"
+                height="1.777">
+
+            </a-video>
+
+        </a-entity>
+
+    </a-scene>
+
+
+    <script>
+
+        const startButton =
+            document.getElementById("startButton");
+
+        const scene =
+            document.querySelector("a-scene");
+
+        const taehyunTarget =
+            document.querySelector("#taehyunTarget");
+
+        const taehyunVideo =
+            document.querySelector("#taehyunVideo");
+
+
+        // START AR
+        startButton.addEventListener("click", async () => {
+
+            startButton.style.display = "none";
+
+            // Start MindAR
+            scene.emit("arReady");
+
+            const mindarSystem =
+                scene.systems["mindar-image"];
+
+            await mindarSystem.start();
+
+        });
+
+
+        // CARD FOUND
+        taehyunTarget.addEventListener(
+            "targetFound",
+            () => {
+
+                console.log("TaeHyun found!");
+
+                taehyunVideo.currentTime = 0;
+
+                taehyunVideo.play()
+                    .catch(error => {
+                        console.log(
+                            "Video playback blocked:",
+                            error
+                        );
+                    });
+            }
+        );
+
+
+        // CARD LOST
+        taehyunTarget.addEventListener(
+            "targetLost",
+            () => {
+
+                console.log("TaeHyun lost!");
+
+                taehyunVideo.pause();
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
